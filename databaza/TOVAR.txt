@@ -1,0 +1,5 @@
+4
+1256;Tricko;tricko.png
+2347;Nohavice;nohavice.png
+3752;Topanky;topanky.png
+4859;Mikiny;mikina.png
