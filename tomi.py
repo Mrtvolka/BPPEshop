@@ -9,30 +9,32 @@ root = tk.Tk()
 root.title('Treeview demo')
 root.geometry('850x300')
 
+db_tovar_url = 'databaza/TOVAR.txt'
 # define columns
 columns = ('KOD_tovaru', 'NAZOV_tovaru', 'OBRAZOK_tovaru')
-
 tree = ttk.Treeview(root, columns=columns, show='headings')
 
-# define headings
-tree.heading('KOD_tovaru', text='kod tovaru')
-tree.heading('NAZOV_tovaru', text='nazov tovaru')
-tree.heading('OBRAZOK_tovaru', text='nazov obrazku')
+def viewProducts():
 
-db_tovar_url = 'databaza/TOVAR.txt'
-subor = open(db_tovar_url,'r+')
+    # define headings
+    tree.heading('KOD_tovaru', text='kod tovaru')
+    tree.heading('NAZOV_tovaru', text='nazov tovaru')
+    tree.heading('OBRAZOK_tovaru', text='nazov obrazku')
 
-pocet_produktov = (subor.readline()).strip()
-riadok=(subor.readline()).strip()
-produkty = []
-print(pocet_produktov)
+    subor = open(db_tovar_url,'r+')
 
-while riadok !='':
-    produkt=riadok.split(';')
-    tree.insert('', tk.END, values=produkt)    
+    pocet_produktov = (subor.readline()).strip()
     riadok=(subor.readline()).strip()
+    produkty = []
+    print(pocet_produktov)
 
-subor.close()
+    while riadok !='':
+        produkt=riadok.split(';')
+        tree.insert('', tk.END, values=produkt)    
+        riadok=(subor.readline()).strip()
+
+    subor.close()
+
 
 def add():
     kod = kod_entry.get()
@@ -48,9 +50,38 @@ def add():
     subor.write(str(pocet_produktov))
     # END of the file
     subor.seek(0, os.SEEK_END)
-    subor.write('\n' + kod +';'+ nazov +';'+ obrazok +';')
+    subor.write('\n' + kod +';'+ nazov +';'+ obrazok)
     subor.close()
-    
+
+def delete():
+    for selected_item in tree.selection():
+        item = tree.item(selected_item)
+        oznaceny = item['values']
+        print(oznaceny)
+        zmaz=';'.join(map(str,oznaceny))
+        print(zmaz)
+        
+    with open(db_tovar_url, "r") as input:
+        with open("temp.txt", "w") as output:
+            for line in input:
+                if line.strip("\n") != zmaz:
+                    output.write(line)
+
+    os.replace('temp.txt', db_tovar_url)
+
+    selected_item = tree.selection()[0]
+    tree.delete(selected_item)
+
+    subor = open(db_tovar_url,'r+')
+    pocet_produktov = int((subor.readline()).strip()) - 1
+    print(pocet_produktov)
+    # FIRST ROW
+    subor.seek(0, os.SEEK_SET)
+    subor.write(str(pocet_produktov))
+    subor.close()
+
+
+viewProducts()
 
 kod_entry = tkinter.Entry()
 kod_entry.insert(0, 'kod')
@@ -66,6 +97,9 @@ obrazok_entry.grid(row=3, column=2)
 
 add_button = tk.Button(text="PRIDAT TOVAR",command=add) 
 add_button.grid(row=4, column=2)
+
+add_button = tk.Button(text="VYMAZAT TOVAR",command=delete) 
+add_button.grid(row=6, column=2)
 
 tree.grid(padx=10,pady=10, sticky='nsew')
 scrollbar = ttk.Scrollbar(root, orient=tk.VERTICAL, command=tree.yview)
