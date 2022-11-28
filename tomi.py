@@ -113,7 +113,28 @@ def edit():
     selected_item = tree.selection()[0]
     tree.item(selected_item,values=([kod, nazov, obrazok]))
 
+def showImage(event):
+    for selected_item in tree.selection():
+        item = tree.item(selected_item)
+        oznaceny = item['values']
+        print(oznaceny)
+        zmaz=';'.join(map(str,oznaceny))
+        #print(zmaz)
+        showinfo(title='Information', message=zmaz)
 
+    poz=zmaz.find(';')
+    nazov_obrazku_cesta=zmaz[poz+1:]
+    print(nazov_obrazku_cesta)
+    poz2=nazov_obrazku_cesta.find(';')
+    nazov_obrazku=nazov_obrazku_cesta[poz2+1:]
+    print(nazov_obrazku)
+
+    img=tkinter.PhotoImage(file='images/'+nazov_obrazku)
+    #canvas.create_image(100,100,image=img)
+    #my_label=Label(root,image=img)
+    #my_label.place(x=1,y=1,relheight=1,relwidth=1)
+    
+tree.bind('<<TreeviewSelect>>', showImage)
 
 viewProducts()
 
