@@ -80,6 +80,40 @@ def delete():
     subor.write(str(pocet_produktov))
     subor.close()
 
+def edit():
+    kod = kod_entry.get()
+    nazov = nazov_entry.get()
+    obrazok = obrazok_entry.get()
+
+    for selected_item1 in tree.selection():
+        item = tree.item(selected_item1)
+        oznaceny = item['values']
+        print(oznaceny)
+        riadok=';'.join(map(str,oznaceny))
+        print(riadok)
+
+    subor = open(db_tovar_url,'r+')
+    for line in subor:
+        if riadok in line:
+            new_line = line.replace(line, kod+';'+nazov+';'+obrazok)
+            print(new_line)
+            
+    subor.close()
+
+    with open(db_tovar_url, "r") as input:
+        with open("temp1.txt", "w") as output:
+            for line in input:
+                if line.strip("\n") != riadok:
+                    output.write(line)
+                if line.strip("\n") == riadok:
+                    output.write(new_line+'\n')
+                
+    os.replace('temp1.txt', db_tovar_url)
+
+    selected_item = tree.selection()[0]
+    tree.item(selected_item,values=([kod, nazov, obrazok]))
+
+
 
 viewProducts()
 
@@ -98,8 +132,11 @@ obrazok_entry.grid(row=3, column=2)
 add_button = tk.Button(text="PRIDAT TOVAR",command=add) 
 add_button.grid(row=4, column=2)
 
-add_button = tk.Button(text="VYMAZAT TOVAR",command=delete) 
-add_button.grid(row=6, column=2)
+delete_button = tk.Button(text="VYMAZAT TOVAR",command=delete) 
+delete_button.grid(row=5, column=2)
+
+edit_button = tk.Button(text="UPRAVIT TOVAR",command=edit) 
+edit_button.grid(row=6, column=2)
 
 tree.grid(padx=10,pady=10, sticky='nsew')
 scrollbar = ttk.Scrollbar(root, orient=tk.VERTICAL, command=tree.yview)
