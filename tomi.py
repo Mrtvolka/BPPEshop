@@ -122,6 +122,24 @@ def edit():
     selected_item = tree.selection()[0]
     tree.item(selected_item,values=([kod, nazov, obrazok]))
 
+def search():
+    search = "Nohavice"
+    #1. Vytvorit pole nazvov
+    # vytvorit search_getentry
+    # if search in nazvy_produktov
+    print("search")
+    
+    idx = []
+    for id in tree.get_children():
+        item = tree.item(id)['values']
+        nazov = item[1]
+        if search in nazov:
+            idx.append(id)
+
+
+    tree.selection_set(idx)
+
+
 def showImage(event):
     for selected_item in tree.selection():
         item = tree.item(selected_item)
@@ -141,11 +159,12 @@ def showImage(event):
     img=tkinter.PhotoImage(file='images/'+nazov_obrazku)
     #canvas.create_image(100,100,image=img)
     #my_label=Label(root,image=img)
-    #my_label.place(x=1,y=1,relheight=1,relwidth=1)
+    #my_label.place(x=1,y=1,relheight=1,relwidth=1)    
     
-tree.bind('<<TreeviewSelect>>', showImage)
+#tree.bind('<<TreeviewSelect>>', showImage)
 
 viewProducts()
+search()
 
 kod_entry = tkinter.Entry()
 kod_entry.insert(0, 'kod')
