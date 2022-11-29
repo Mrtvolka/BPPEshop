@@ -4,6 +4,7 @@ import tkinter
 from tkinter.ttk import *
 from tkinter.messagebox import showinfo
 import os
+import re
 
 root = tk.Tk()
 root.title('Treeview demo')
@@ -15,6 +16,14 @@ columns = ('KOD_tovaru', 'NAZOV_tovaru', 'OBRAZOK_tovaru')
 tree = ttk.Treeview(root, columns=columns, show='headings')
 
 def viewProducts():
+
+    string = "TomI"    
+    pattern = re.compile("^[a-zA-Z]+$")
+    if pattern.match(string):    
+        print("hura")
+    else:
+        print("nope")
+    
 
     # define headings
     tree.heading('KOD_tovaru', text='kod tovaru')
