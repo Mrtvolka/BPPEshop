@@ -5,13 +5,15 @@ from tkinter.ttk import *
 from tkinter.messagebox import showinfo
 import os
 import re
+import PIL
+from PIL import Image
 
 root = tk.Tk()
 root.title('INTERNA DATABAZA')
 root.geometry('850x500')
 
 db_tovar_url = 'databaza/TOVAR.txt'
-# define columns
+
 columns = ('KOD_tovaru', 'NAZOV_tovaru', 'OBRAZOK_tovaru')
 tree = ttk.Treeview(root, columns=columns, show='headings')
 
@@ -200,28 +202,22 @@ def search():
 
     tree.selection_set(idx)
 
-# def showImage(event):
-#     for selected_item in tree.selection():
-#         item = tree.item(selected_item)
-#         oznaceny = item['values']
-#         print(oznaceny)
-#         zmaz=';'.join(map(str,oznaceny))
-#         #print(zmaz)
-#         showinfo(title='Information', message=zmaz)
+def showImage():
+    for selected_item in tree.selection():
+        item = tree.item(selected_item)
+        oznaceny = item['values']
+        #print(oznaceny)
+        zmaz=';'.join(map(str,oznaceny))
 
-#     poz=zmaz.find(';')
-#     nazov_obrazku_cesta=zmaz[poz+1:]
-#     print(nazov_obrazku_cesta)
-#     poz2=nazov_obrazku_cesta.find(';')
-#     nazov_obrazku=nazov_obrazku_cesta[poz2+1:]
-#     print(nazov_obrazku)
+    poz=zmaz.find(';')
+    nazov_obrazku_cesta=zmaz[poz+1:]
+    #print(nazov_obrazku_cesta)
+    poz2=nazov_obrazku_cesta.find(';')
+    nazov_obrazku=nazov_obrazku_cesta[poz2+1:]
+    print(nazov_obrazku)
 
-#     img=tkinter.PhotoImage(file='images/'+nazov_obrazku)
-#     #canvas.create_image(100,100,image=img)
-#     #my_label=Label(root,image=img)
-#     #my_label.place(x=1,y=1,relheight=1,relwidth=1)
-#     #my_label.place(x=1,y=1,relheight=1,relwidth=1)      
-
+    img=Image.open('images/'+nazov_obrazku)
+    img.show()
 
 tree.bind('<<TreeviewSelect>>',fillEntries)
 viewProducts()
@@ -253,6 +249,9 @@ edit_button.grid(row=6, column=2)
 
 seacrh_button = tk.Button(text="VYHLADAT TOVAR",command=search) 
 seacrh_button.grid(row=8, column=2)
+
+image_button = tk.Button(text="ZOBRAZ OBRAZOK",command=showImage) 
+image_button.grid(row=9, column=2)
 
 tree.grid(padx=10,pady=10, sticky='nsew')
 scrollbar = ttk.Scrollbar(root, orient=tk.VERTICAL, command=tree.yview)
