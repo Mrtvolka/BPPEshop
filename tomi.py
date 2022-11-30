@@ -10,7 +10,7 @@ from PIL import Image
 
 root = tk.Tk()
 root.title('INTERNA DATABAZA')
-root.geometry('850x500')
+root.geometry('650x450')
 
 db_tovar_url = 'databaza/TOVAR.txt'
 
@@ -222,39 +222,39 @@ def showImage():
 tree.bind('<<TreeviewSelect>>',fillEntries)
 viewProducts()
 
-search_entry = tkinter.Entry()
-search_entry.insert(0, 'vyhladat podla nazvu')
-search_entry.grid(row=7, column=2)
-
 kod_entry = tkinter.Entry()
 kod_entry.insert(0, 'kod')
-kod_entry.grid(row=1, column=2)
+kod_entry.grid(row=1, column=0)
 
 nazov_entry = tkinter.Entry()
 nazov_entry.insert(0, 'nazov')
-nazov_entry.grid(row=2, column=2)
+nazov_entry.grid(row=2, column=0)
 
 obrazok_entry = tkinter.Entry()
 obrazok_entry.insert(0, 'obrazok')
-obrazok_entry.grid(row=3, column=2)
+obrazok_entry.grid(row=3, column=0)
 
 add_button = tk.Button(text="PRIDAT TOVAR",command=add) 
-add_button.grid(row=4, column=2)
+add_button.grid(row=4, column=0)
 
 delete_button = tk.Button(text="VYMAZAT TOVAR",command=delete) 
-delete_button.grid(row=5, column=2)
+delete_button.grid(row=5, column=0)
 
 edit_button = tk.Button(text="UPRAVIT TOVAR",command=edit) 
-edit_button.grid(row=6, column=2)
+edit_button.grid(row=6, column=0)
+
+search_entry = tkinter.Entry()
+search_entry.insert(0, 'vyhladat podla nazvu')
+search_entry.grid(row=7, column=0)
 
 seacrh_button = tk.Button(text="VYHLADAT TOVAR",command=search) 
-seacrh_button.grid(row=8, column=2)
+seacrh_button.grid(row=8, column=0)
 
 image_button = tk.Button(text="ZOBRAZ OBRAZOK",command=showImage) 
-image_button.grid(row=9, column=2)
+image_button.grid(row=9, column=0)
 
-tree.grid(padx=10,pady=10, sticky='nsew')
+tree.grid(row=0, column=0,padx=10,pady=5, sticky='nsew')#
 scrollbar = ttk.Scrollbar(root, orient=tk.VERTICAL, command=tree.yview)
 tree.configure(yscroll=scrollbar.set)
-scrollbar.grid(row=2, column=1, sticky='ns')
+scrollbar.grid(row=0, column=1, sticky='ns')
 root.mainloop()
