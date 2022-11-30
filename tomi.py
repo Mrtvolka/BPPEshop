@@ -7,7 +7,7 @@ import os
 import re
 
 root = tk.Tk()
-root.title('Treeview demo')
+root.title('INTERNA DATABAZA')
 root.geometry('850x500')
 
 db_tovar_url = 'databaza/TOVAR.txt'
@@ -16,15 +16,7 @@ columns = ('KOD_tovaru', 'NAZOV_tovaru', 'OBRAZOK_tovaru')
 tree = ttk.Treeview(root, columns=columns, show='headings')
 
 def viewProducts():
-    string = "t"    
-    string1 = "4"  
-    pattern = re.compile("^[a-zA-Z]+$")
 
-    if pattern.match(string) and pattern.match(string1) :    
-        print("hura")
-    else:
-        print("nope")
-    
     # define headings
     tree.heading('KOD_tovaru', text='kod tovaru')
     tree.heading('NAZOV_tovaru', text='nazov tovaru')
@@ -43,12 +35,22 @@ def viewProducts():
     subor.close()
 
 def add():
+
     kod = kod_entry.get()
     nazov = nazov_entry.get()
     obrazok = obrazok_entry.get()
-    
-    pattern = re.compile("^[a-zA-Z]+$")
-    pattern2 = re.compile("^[a-zA-Z.]+$")
+
+    kontrolny_riadok=kod +';'+ nazov +';'+ obrazok
+    print(kontrolny_riadok)
+
+    subor = open(db_tovar_url,'r+')
+    for line in subor:
+        if kontrolny_riadok in line:
+            showinfo(title='INFO', message='Tovar uz existuje')
+            return 
+
+    pattern = re.compile("^[a-zA-Z ]+$")
+    pattern2 = re.compile("^[a-zA-Z._]+$")
     pattern3 = re.compile("^[0-9]+$")
 
     if pattern.match(nazov) and pattern2.match(obrazok) and pattern3.match(kod):  
@@ -139,8 +141,17 @@ def edit():
     nazov = nazov_entry.get()
     obrazok = obrazok_entry.get()
 
-    pattern = re.compile("^[a-zA-Z]+$")
-    pattern2 = re.compile("^[a-zA-Z.]+$")
+    kontrolny_riadok=kod +';'+ nazov +';'+ obrazok
+    print(kontrolny_riadok)
+
+    subor = open(db_tovar_url,'r+')
+    for line in subor:
+        if kontrolny_riadok in line:
+            showinfo(title='INFO', message='Tovar uz existuje')
+            return 
+
+    pattern = re.compile("^[a-zA-Z ]+$")
+    pattern2 = re.compile("^[a-zA-Z._]+$")
     pattern3 = re.compile("^[0-9]+$")
 
     if pattern.match(nazov) and pattern2.match(obrazok) and pattern3.match(kod):
@@ -176,6 +187,7 @@ def edit():
         showinfo(title='INFO', message='zle zadane hodnoty')
 
 def search():
+
     search = search_entry.get()
     print(search)
     
@@ -215,7 +227,7 @@ tree.bind('<<TreeviewSelect>>',fillEntries)
 viewProducts()
 
 search_entry = tkinter.Entry()
-search_entry.insert(0, 'vyhladat')
+search_entry.insert(0, 'vyhladat podla nazvu')
 search_entry.grid(row=7, column=2)
 
 kod_entry = tkinter.Entry()
