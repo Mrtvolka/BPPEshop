@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter
 from tkinter.ttk import *
-from tkinter.messagebox import showinfo
+from tkinter.messagebox import showinfo,askyesno
 import os
 import re
 import PIL
@@ -85,31 +85,46 @@ def add():
         showinfo(title='INFO', message='zle zadane hodnoty')
  
 def delete():
-    for selected_item in tree.selection():
-        item = tree.item(selected_item)
-        oznaceny = item['values']
-        print(oznaceny)
-        zmaz=';'.join(map(str,oznaceny))
-        print(zmaz)
+    answer = askyesno(title='POTVRDENIE',
+                    message='Naozaj chcete vymazať tovar?')
+    if answer:
+        for selected_item in tree.selection():
+            item = tree.item(selected_item)
+            oznaceny = item['values']
+            print(oznaceny)
+            zmaz=';'.join(map(str,oznaceny))
+            print(zmaz)
+            
+        with open(db_tovar_url, "r") as input:
+            with open("temp.txt", "w") as output:
+                for line in input:
+                    if line.strip("\n") != zmaz:
+                        output.write(line)
+
+        os.replace('temp.txt', db_tovar_url)
+
+        selected_item = tree.selection()[0]
+        tree.delete(selected_item)
+
+        subor = open(db_tovar_url,'r+')
+        pocet_produktov = int((subor.readline()).strip())
+        print(pocet_produktov)
+        subor.close()
         
-    with open(db_tovar_url, "r") as input:
-        with open("temp.txt", "w") as output:
-            for line in input:
-                if line.strip("\n") != zmaz:
-                    output.write(line)
+        subor = open(db_tovar_url,'r+')
+        pocet_produktov1 = int((subor.readline()).strip()) - 1
+        print(pocet_produktov1)
+        subor.close()
 
-    os.replace('temp.txt', db_tovar_url)
+        with open(db_tovar_url, "r") as input:
+            with open("temp2.txt", "w") as output:
+                for line in input:
+                    if line.strip("\n") != str(pocet_produktov) :
+                        output.write(line)
+                    if line.strip("\n") == str(pocet_produktov) :
+                        output.write(str(pocet_produktov1)+'\n')
 
-    selected_item = tree.selection()[0]
-    tree.delete(selected_item)
-
-    subor = open(db_tovar_url,'r+')
-    pocet_produktov = int((subor.readline()).strip()) - 1
-    print(pocet_produktov)
-    # FIRST ROW
-    subor.seek(0, os.SEEK_SET)
-    subor.write(str(pocet_produktov))
-    subor.close()
+        os.replace('temp2.txt', db_tovar_url)
 
 def fillEntries(event):
     kod_entry.delete(0,'end')
@@ -149,10 +164,10 @@ def fillEntries(event):
         obrazok_entry.insert(0,nazov_obrazku)
 
         img=Image.open(rootPath + 'images/' + nazov_obrazku)
-        produkt_img = customtkinter.CTkImage(light_image=img,dark_image=img,size=(200, 200))
+        produkt_img = customtkinter.CTkImage(light_image=img,dark_image=img,size=(280, 280))
 
         place_for_Image = customtkinter.CTkButton(master=frame1,image=produkt_img, text="", height=200,width=200, corner_radius=0, border_spacing=0)
-        place_for_Image.grid(row=1, column=0, pady=0, padx=0)
+        place_for_Image.grid(row=7, column=0, pady=0, padx=0)
 
 def edit():
     
@@ -226,7 +241,6 @@ viewProducts()
 cestaObrazky = rootPath + "images2/"
 WIDTH=1280
 HEIGHT=720
-TEXT_FONT = ("Helvetica", "15")
 
 #____________________________FRAME0______________________________________________
 frame = customtkinter.CTkFrame(master=root,
@@ -240,7 +254,7 @@ frame.grid_rowconfigure(3, weight=1)  # empty row as spacing
 frame.grid_rowconfigure(8, weight=9)  # empty row as spacing
 frame.grid_rowconfigure(11, minsize=25)
 
-label_frame = customtkinter.CTkLabel(master=frame,text="Funkcie s tovarom v databaze",corner_radius=6,fg_color=("white", "gray38"),justify=tk.CENTER)
+label_frame = customtkinter.CTkLabel(master=frame,width=260,height=40,text="Funkcie s tovarom v databaze",corner_radius=6,fg_color=("white", "gray38"),justify=tk.CENTER)
 label_frame.grid(row=1,pady=50)
 
 kod_entry = customtkinter.CTkEntry(master=frame)
@@ -283,8 +297,8 @@ frame1.grid_rowconfigure(8, weight=9)  # empty row as spacing
 frame1.grid_rowconfigure(11, minsize=25)
 
 
-label_frame1 = customtkinter.CTkLabel(master=frame1,text='↓obrazok oznaceneho tovaru↓',corner_radius=6,fg_color=("white", "gray38"),justify=tk.CENTER)
-label_frame1.grid(pady=50)
+label_frame1 = customtkinter.CTkLabel(master=frame1,width=180,height=40,text='↓obrazok oznaceneho tovaru↓',corner_radius=6,fg_color=("white", "gray38"),justify=tk.CENTER)
+label_frame1.grid(pady=50,padx=65)
 
 
 #__________________DAVID_BUTTONS____________________________________________________________________________
