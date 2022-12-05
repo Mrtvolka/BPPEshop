@@ -16,7 +16,10 @@ root = customtkinter.CTk()
 root.title('INTERNA DATABAZA')
 root.geometry('1280x720')
 
-db_tovar_url = 'C:/Users/tomin/Documents/GitHub/BPPEshop/databaza/TOVAR.txt'
+rootPath = 'C:/Users/tomin/Documents/GitHub/BPPEshop/'
+#rootPath = 'C:/Users/Ivan/Documents/Sites/BPPEshop/'
+
+db_tovar_url = rootPath + 'databaza/TOVAR.txt'
 
 columns = ('KOD_tovaru', 'NAZOV_tovaru', 'OBRAZOK_tovaru')
 tree = ttk.Treeview(root, columns=columns, show='headings',)
@@ -142,6 +145,12 @@ def fillEntries(event):
         nazov_entry.insert(0,nazov_tovaru)
         obrazok_entry.insert(0,nazov_obrazku)
 
+        img=Image.open(rootPath + 'images/' + nazov_obrazku)
+        produkt_img = customtkinter.CTkImage(light_image=img,dark_image=img,size=(200, 200))
+
+        place_for_Image = customtkinter.CTkButton(master=frame1,image=produkt_img, text="", height=200,width=200, corner_radius=0, border_spacing=0)
+        place_for_Image.grid(row=1, column=0, pady=0, padx=0)
+
 def edit():
     
     kod = kod_entry.get()
@@ -206,36 +215,11 @@ def search():
 
     tree.selection_set(idx)
 
-def showImage():
-    for selected_item in tree.selection():
-        item = tree.item(selected_item)
-        oznaceny = item['values']
-        #print(oznaceny)
-        zmaz=';'.join(map(str,oznaceny))
-
-    poz=zmaz.find(';')
-    nazov_obrazku_cesta=zmaz[poz+1:]
-    #print(nazov_obrazku_cesta)
-    poz2=nazov_obrazku_cesta.find(';')
-    nazov_obrazku=nazov_obrazku_cesta[poz2+1:]
-    print(nazov_obrazku)
-
-    img=Image.open('C:/Users/tomin/Documents/GitHub/BPPEshop/images/'+nazov_obrazku)
-    img.show()
-
-    #my_image = ImageTk.PhotoImage(light_image=img,size=(30, 30))
-                                  
-    #img = tkinter.PhotoImage(file ='C:/Users/tomin/Documents/GitHub/BPPEshop/images/'+nazov_obrazku)
-    
-    #obrazok = customtkinter.CTkButton(frame1,image=img,command=None)  
-                            
-    #my_image.grid(row=1, column=0, pady=0, padx=50,sticky="e")
-
 tree.bind('<<TreeviewSelect>>',fillEntries)
 viewProducts()
 
 #____________________________DESIGN_____________________________________________
-cestaObrazky = r"C:/Users/tomin/Documents/GitHub/BPPEshop/images2/"
+cestaObrazky = rootPath + "images2/"
 WIDTH=1280
 HEIGHT=720
 TEXT_FONT = ("Helvetica", "15")
@@ -252,12 +236,7 @@ frame.grid_rowconfigure(3, weight=1)  # empty row as spacing
 frame.grid_rowconfigure(8, weight=9)  # empty row as spacing
 frame.grid_rowconfigure(11, minsize=25)
 
-label_frame = customtkinter.CTkLabel(master=frame,
-                                                        text="Funkcie s tovarom v databaze",
-                                                        text_font=TEXT_FONT,
-                                                        corner_radius=6,
-                                                        fg_color=("white", "gray38"),
-                                                        justify=tk.CENTER)
+label_frame = customtkinter.CTkLabel(master=frame,text="Funkcie s tovarom v databaze",corner_radius=6,fg_color=("white", "gray38"),justify=tk.CENTER)
 label_frame.grid(row=1,pady=50)
 
 kod_entry = customtkinter.CTkEntry(master=frame)
@@ -300,23 +279,21 @@ frame1.grid_rowconfigure(8, weight=9)  # empty row as spacing
 frame1.grid_rowconfigure(11, minsize=25)
 
 
-label_frame1 = customtkinter.CTkLabel(master=frame1,
-                                                        text='↓obrazok oznaceneho tovaru↓',
-                                                        text_font=TEXT_FONT,
-                                                        corner_radius=6,
-                                                        fg_color=("white", "gray38"),
-                                                        justify=tk.CENTER)
+label_frame1 = customtkinter.CTkLabel(master=frame1,text='↓obrazok oznaceneho tovaru↓',corner_radius=6,fg_color=("white", "gray38"),justify=tk.CENTER)
 label_frame1.grid(pady=50)
-
-image_button =customtkinter.CTkButton(frame1,fg_color= 'orange', text="ZOBRAZ OBRAZOK",command=showImage) 
-image_button.grid(row=10, column=0, pady=10, padx=90, sticky="s")
-
 
 
 #__________________DAVID_BUTTONS____________________________________________________________________________
 
-home_image = tk.PhotoImage(file = cestaObrazky + "home_logo.png")
-settings_image = tk.PhotoImage(file = cestaObrazky + "settings_logo.png")
+
+
+home_image = customtkinter.CTkImage(light_image=Image.open(cestaObrazky + "home_logo.png"),
+                                  dark_image=Image.open(cestaObrazky + "home_logo.png"),
+                                  size=(30, 30))
+
+settings_image = customtkinter.CTkImage(light_image=Image.open(cestaObrazky + "settings_logo.png"),
+dark_image=Image.open(cestaObrazky + "settings_logo.png"),
+size=(30, 30))
 
 settings = customtkinter.CTkButton(master=frame,image=settings_image,text="", height=50,width=90,	
                                 command=None)  
@@ -332,11 +309,11 @@ style.theme_use('clam')
 style.configure('Treeview',background='silver',foreground='black',rowheight=50,fieldbackground='silver')
 style.map('Treeview')
 #__________________MIDDLE_PLACE____________________________________________________________________________
-search_entry = customtkinter.CTkEntry()
+search_entry = customtkinter.CTkEntry(root)
 search_entry.insert(0, 'vyhladat podla nazvu')
 search_entry.grid(column=1,row=0,ipadx=150,ipady=0,padx=30,pady=20)
 
-seacrh_button = customtkinter.CTkButton(text="VYHLADAT TOVAR",command=search) 
+seacrh_button = customtkinter.CTkButton(root, text="VYHLADAT TOVAR",command=search) 
 seacrh_button.grid(column=1,row=9,sticky='e')
 
 #search()
