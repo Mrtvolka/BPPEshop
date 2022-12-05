@@ -117,10 +117,13 @@ def fillEntries(event):
     obrazok_entry.delete(0,'end')
 
     for selected_item3 in tree.selection():
+        dlzka=tree.selection().__len__()
+        #print(dlzka)
+        if dlzka>1:
+            return
         item1 = tree.item(selected_item3)
-        #print(item1)
         oznaceny1 = item1['values']
-        #print(oznaceny)
+        #print(oznaceny1)
         riadok=';'.join(map(str,oznaceny1))
         #print(riadok)
 
@@ -203,9 +206,10 @@ def edit():
         showinfo(title='INFO', message='zle zadane hodnoty')
 
 def search():
+    #if e.keysym=='<Enter>':
     search = search_entry.get()
     print(search)
-        
+            
     idx = []
     for id in tree.get_children():
         item = tree.item(id)['values']
@@ -272,7 +276,7 @@ frame1 = customtkinter.CTkFrame(master=root,
                                height=HEIGHT,
                                corner_radius=10)
 frame1.grid(row=0, column=3, sticky="nsew",padx = 20,pady= 20,rowspan=10)
-
+ 
 frame1.grid_rowconfigure(1, minsize=25)   # empty row with minsize as spacing
 frame1.grid_rowconfigure(3, weight=1)  # empty row as spacing
 frame1.grid_rowconfigure(8, weight=9)  # empty row as spacing
@@ -317,7 +321,8 @@ seacrh_button = customtkinter.CTkButton(root, text="VYHLADAT TOVAR",command=sear
 seacrh_button.grid(column=1,row=9,sticky='e')
 
 #search()
-#root.bind('<Enter>', search)
+#root.bind_all('<Enter>', search)
+
 tree.grid(row=1, column=1,padx=50,pady=0,columnspan=2,rowspan=8,sticky='nsw')#
 scrollbar = ttk.Scrollbar(root, orient=tk.VERTICAL, command=tree.yview)
 tree.configure(yscroll=scrollbar.set)
