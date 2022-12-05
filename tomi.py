@@ -6,7 +6,7 @@ from tkinter.messagebox import showinfo
 import os
 import re
 import PIL
-from PIL import Image
+from PIL import ImageTk,Image
 import customtkinter
 
 customtkinter.set_appearance_mode("Dark")
@@ -115,6 +115,7 @@ def fillEntries(event):
 
     for selected_item3 in tree.selection():
         item1 = tree.item(selected_item3)
+        #print(item1)
         oznaceny1 = item1['values']
         #print(oznaceny)
         riadok=';'.join(map(str,oznaceny1))
@@ -222,15 +223,13 @@ def showImage():
     img=Image.open('C:/Users/tomin/Documents/GitHub/BPPEshop/images/'+nazov_obrazku)
     img.show()
 
-    #my_image = customtkinter.TkImage(light_image=img,size=(30, 30))
+    #my_image = ImageTk.PhotoImage(light_image=img,size=(30, 30))
                                   
-   
-    #img = tk.PhotoImage(file ='C:/Users/tomin/Documents/GitHub/BPPEshop/images/'+nazov_obrazku)
-    #img2=img.resize((500,500))
-    #img3=img2.convert('RGB')
-    #obrazok = customtkinter.CTkButton(master=frame1,image=img3,command=None)  
+    #img = tkinter.PhotoImage(file ='C:/Users/tomin/Documents/GitHub/BPPEshop/images/'+nazov_obrazku)
+    
+    #obrazok = customtkinter.CTkButton(frame1,image=img,command=None)  
                             
-    #obrazok.grid(row=0, column=0, pady=0, padx=50,sticky="e")
+    #my_image.grid(row=1, column=0, pady=0, padx=50,sticky="e")
 
 tree.bind('<<TreeviewSelect>>',fillEntries)
 viewProducts()
