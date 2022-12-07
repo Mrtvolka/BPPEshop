@@ -8,6 +8,7 @@ import re
 import PIL
 from PIL import ImageTk,Image
 import customtkinter
+from custom_hovertip import CustomTooltipLabel
 
 customtkinter.set_appearance_mode("Dark")
 customtkinter.set_default_color_theme("green")
@@ -19,6 +20,7 @@ root.geometry('1280x720')
 rootPath = 'C:/Users/tomin/Documents/GitHub/BPPEshop/'
 #rootPath = 'C:/Users/Ivan/Documents/Sites/BPPEshop/'
 
+db_tovar_url = rootPath + 'databaza/TOVAR.txt'
 db_tovar_url = rootPath + 'databaza/TOVAR.txt'
 
 columns = ('KOD_tovaru', 'NAZOV_tovaru', 'OBRAZOK_tovaru')
@@ -35,16 +37,14 @@ def viewProducts():
     pocet_produktov = (subor.readline()).strip()
     riadok=(subor.readline()).strip()
 
-    produkty = []
     print(pocet_produktov)
     while riadok !='':
         produkt=riadok.split(';')
         tree.insert('', tk.END, values=produkt)    
         riadok=(subor.readline()).strip()
     subor.close()
-
+   
 def add():
-
     kod = kod_entry.get()
     nazov = nazov_entry.get()
     obrazok = obrazok_entry.get()
@@ -56,7 +56,19 @@ def add():
     for line in subor:
         if kontrolny_riadok in line:
             showinfo(title='INFO', message='Tovar uz existuje')
+            return
+    subor.close()
+
+    kontrolny_riadok2=kod
+    print(kontrolny_riadok2)
+
+    subor = open(db_tovar_url,'r+')
+    for line in subor:
+        print(line)
+        if kontrolny_riadok2 in line:
+            showinfo(title='INFO', message='kod uz existuje')
             return 
+    subor.close()
 
     pattern = re.compile("^[a-zA-Z ]+$")
     pattern2 = re.compile("^[a-zA-Z._]+$")
@@ -164,9 +176,9 @@ def fillEntries(event):
         obrazok_entry.insert(0,nazov_obrazku)
 
         img=Image.open(rootPath + 'images/' + nazov_obrazku)
-        produkt_img = customtkinter.CTkImage(light_image=img,dark_image=img,size=(280, 280))
+        produkt_img = customtkinter.CTkImage(light_image=img,dark_image=img,size=(280, 400))
 
-        place_for_Image = customtkinter.CTkButton(master=frame1,image=produkt_img, text="", height=200,width=200, corner_radius=0, border_spacing=0)
+        place_for_Image = customtkinter.CTkButton(master=frame1,image=produkt_img, text="",fg_color ="transparent",hover_color=('grey85','grey17'), height=200,width=200, corner_radius=0, border_spacing=0)
         place_for_Image.grid(row=7, column=0, pady=0, padx=0)
 
 def edit():
@@ -176,13 +188,25 @@ def edit():
     obrazok = obrazok_entry.get()
 
     kontrolny_riadok=kod +';'+ nazov +';'+ obrazok
-    print(kontrolny_riadok)
+    #print(kontrolny_riadok)
 
     subor = open(db_tovar_url,'r+')
     for line in subor:
         if kontrolny_riadok in line:
             showinfo(title='INFO', message='Tovar uz existuje')
             return 
+    subor.close()
+
+    kontrolny_riadok2=kod
+    print(kontrolny_riadok2)
+
+    subor = open(db_tovar_url,'r+')
+    for line in subor:
+        print(line)
+        if kontrolny_riadok2 in line:
+            showinfo(title='INFO', message='kod uz existuje')
+            return 
+    subor.close()
 
     pattern = re.compile("^[a-zA-Z ]+$")
     pattern2 = re.compile("^[a-zA-Z._]+$")
@@ -193,9 +217,9 @@ def edit():
         for selected_item1 in tree.selection():
             item = tree.item(selected_item1)
             oznaceny = item['values']
-            print(oznaceny)
+            #print(oznaceny)
             riadok=';'.join(map(str,oznaceny))
-            print(riadok)
+            #print(riadok)
 
         subor = open(db_tovar_url,'r+')
         for line in subor:
@@ -217,14 +241,28 @@ def edit():
         selected_item = tree.selection()[0]
         tree.item(selected_item,values=([kod, nazov, obrazok]))
 
+
+
     else:
         showinfo(title='INFO', message='zle zadane hodnoty')
 
-def search():
-    #if e.keysym=='<Enter>':
+def search(e):
     search = search_entry.get()
     print(search)
-            
+                
+    idx = []
+    for id in tree.get_children():
+        item = tree.item(id)['values']
+        nazov = item[1]
+        if search in nazov:
+            idx.append(id)
+
+    tree.selection_set(idx)
+
+def search2():
+    search = search_entry.get()
+    print(search)
+                
     idx = []
     for id in tree.get_children():
         item = tree.item(id)['values']
@@ -257,26 +295,24 @@ frame.grid_rowconfigure(11, minsize=25)
 label_frame = customtkinter.CTkLabel(master=frame,width=260,height=40,text="Funkcie s tovarom v databaze",corner_radius=6,fg_color=("white", "gray38"),justify=tk.CENTER)
 label_frame.grid(row=1,pady=50)
 
-kod_entry = customtkinter.CTkEntry(master=frame)
-kod_entry.insert(0, 'kod')
+kod_entry = customtkinter.CTkEntry(master=frame,placeholder_text= "kod")
 kod_entry.grid(row=2,padx=90,pady=10)
 
-nazov_entry = customtkinter.CTkEntry(master=frame)
-nazov_entry.insert(0, 'nazov')
+nazov_entry = customtkinter.CTkEntry(master=frame,placeholder_text= "nazov")
 nazov_entry.grid()
 
-obrazok_entry = customtkinter.CTkEntry(master=frame)
-obrazok_entry.insert(0, 'obrazok')
+obrazok_entry = customtkinter.CTkEntry(master=frame,placeholder_text= "obrazok")
 obrazok_entry.grid(pady=10)
 
 add_button = customtkinter.CTkButton(master=frame,text="PRIDAT TOVAR",command=add) 
 add_button.grid()
-
-delete_button = customtkinter.CTkButton(master=frame,text="VYMAZAT TOVAR",command=delete) 
-delete_button.grid()
+#CustomTooltipLabel(anchor_widget=add_button,text="Add more items!")
 
 edit_button = customtkinter.CTkButton(master=frame,text="UPRAVIT TOVAR",command=edit) 
 edit_button.grid() 
+
+delete_button = customtkinter.CTkButton(master=frame,text="VYMAZAT TOVAR",command=delete,fg_color='firebrick1',hover_color='firebrick3') 
+delete_button.grid()
 
 def change_appearance_mode(new_appearance_mode):
     customtkinter.set_appearance_mode(new_appearance_mode)
@@ -303,8 +339,6 @@ label_frame1.grid(pady=50,padx=65)
 
 #__________________DAVID_BUTTONS____________________________________________________________________________
 
-
-
 home_image = customtkinter.CTkImage(light_image=Image.open(cestaObrazky + "home_logo.png"),
                                   dark_image=Image.open(cestaObrazky + "home_logo.png"),
                                   size=(30, 30))
@@ -327,15 +361,17 @@ style.theme_use('clam')
 style.configure('Treeview',background='silver',foreground='black',rowheight=50,fieldbackground='silver')
 style.map('Treeview')
 #__________________MIDDLE_PLACE____________________________________________________________________________
-search_entry = customtkinter.CTkEntry(root)
-search_entry.insert(0, 'vyhladat podla nazvu')
+search_entry = customtkinter.CTkEntry(root,placeholder_text= "Vyhladaj podla nazvu")
 search_entry.grid(column=1,row=0,ipadx=150,ipady=0,padx=30,pady=20)
 
-seacrh_button = customtkinter.CTkButton(root, text="VYHLADAT TOVAR",command=search) 
-seacrh_button.grid(column=1,row=9,sticky='e')
+search_image = customtkinter.CTkImage(light_image=Image.open(cestaObrazky + "lupa.png"),
+                                  dark_image=Image.open(cestaObrazky + "lupa.png"),
+                                  size=(30, 30))
 
-#search()
-#root.bind_all('<Enter>', search)
+seacrh_button = customtkinter.CTkButton(root,image=search_image, text="",fg_color ="transparent",hover_color=('grey92','grey14'), width=0,height=0,command=search2) 
+seacrh_button.grid(column=1,row=0,sticky='e')
+
+root.bind('<Return>', search)
 
 tree.grid(row=1, column=1,padx=50,pady=0,columnspan=2,rowspan=8,sticky='nsw')#
 scrollbar = ttk.Scrollbar(root, orient=tk.VERTICAL, command=tree.yview)

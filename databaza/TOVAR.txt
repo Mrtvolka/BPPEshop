@@ -1,6 +1,6 @@
 5
 1001;Tricko;tricko.png
-2002;Nohavice;nohavice.png
-3003;Topanky;topanky.png
-4004;Mikiny;mikina.png
-5005;Doplnky;doplnky.png
+2001;Nohavice;nohavice.png
+3001;Topanky;topanky.png
+4001;Mikiny;mikina.png
+5001;Doplnky;doplnky.png
