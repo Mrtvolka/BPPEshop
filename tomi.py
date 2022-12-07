@@ -21,7 +21,8 @@ rootPath = 'C:/Users/tomin/Documents/GitHub/BPPEshop/'
 #rootPath = 'C:/Users/Ivan/Documents/Sites/BPPEshop/'
 
 db_tovar_url = rootPath + 'databaza/TOVAR.txt'
-db_tovar_url = rootPath + 'databaza/TOVAR.txt'
+db_sklad_url = rootPath + 'databaza/SKLAD.txt'
+db_cennik_url = rootPath + 'databaza/CENNIK.txt'
 
 columns = ('KOD_tovaru', 'NAZOV_tovaru', 'OBRAZOK_tovaru')
 tree = ttk.Treeview(root, columns=columns, show='headings',)
@@ -48,7 +49,7 @@ def add():
     kod = kod_entry.get()
     nazov = nazov_entry.get()
     obrazok = obrazok_entry.get()
-
+    #kontola duplicitneho tovaru
     kontrolny_riadok=kod +';'+ nazov +';'+ obrazok
     print(kontrolny_riadok)
 
@@ -58,7 +59,7 @@ def add():
             showinfo(title='INFO', message='Tovar uz existuje')
             return
     subor.close()
-
+    #kontola duplicitneho kodu
     kontrolny_riadok2=kod
     print(kontrolny_riadok2)
 
@@ -75,7 +76,7 @@ def add():
     pattern3 = re.compile("^[0-9]+$")
 
     if pattern.match(nazov) and pattern2.match(obrazok) and pattern3.match(kod):  
-
+        #zapisovanie do tabulky a suboru TOVAR.txt
         tree.insert('', 'end',values=([kod, nazov, obrazok]))  
 
         subor = open(db_tovar_url,'r+')
@@ -97,9 +98,11 @@ def add():
         showinfo(title='INFO', message='zle zadane hodnoty')
  
 def delete():
+    #potvrdzovacia tabulka
     answer = askyesno(title='POTVRDENIE',
                     message='Naozaj chcete vymazať tovar?')
     if answer:
+        #deletovanie v TOVAR.txt
         for selected_item in tree.selection():
             item = tree.item(selected_item)
             oznaceny = item['values']
@@ -137,6 +140,72 @@ def delete():
                         output.write(str(pocet_produktov1)+'\n')
 
         os.replace('temp2.txt', db_tovar_url)
+
+        #deletovanie v SKLAD.txt
+        poz=zmaz.find(';')
+        kodik=zmaz[:poz]
+        print(kodik)
+
+        with open(db_sklad_url, "r") as input:
+            with open("temp.txt", "w") as output:
+                for line in input:
+                    if kodik not in line:
+                        output.write(line)
+
+        os.replace('temp.txt', db_sklad_url)
+
+        subor = open(db_sklad_url,'r+')
+        pocet_produktov = int((subor.readline()).strip())
+        print(pocet_produktov)
+        subor.close()
+        
+        subor = open(db_sklad_url,'r+')
+        pocet_produktov1 = int((subor.readline()).strip()) - 1
+        print(pocet_produktov1)
+        subor.close()
+
+        with open(db_sklad_url, "r") as input:
+            with open("temp2.txt", "w") as output:
+                for line in input:
+                    if line.strip("\n") != str(pocet_produktov) :
+                        output.write(line)
+                    if line.strip("\n") == str(pocet_produktov) :
+                        output.write(str(pocet_produktov1)+'\n')
+
+        os.replace('temp2.txt', db_sklad_url)
+
+        #deletovanie v CENNIK.txt
+        poz=zmaz.find(';')
+        kodik=zmaz[:poz]
+        print(kodik)
+
+        with open(db_cennik_url, "r") as input:
+            with open("temp.txt", "w") as output:
+                for line in input:
+                    if kodik not in line:
+                        output.write(line)
+
+        os.replace('temp.txt', db_cennik_url)
+
+        subor = open(db_cennik_url,'r+')
+        pocet_produktov = int((subor.readline()).strip())
+        print(pocet_produktov)
+        subor.close()
+        
+        subor = open(db_cennik_url,'r+')
+        pocet_produktov1 = int((subor.readline()).strip()) - 1
+        print(pocet_produktov1)
+        subor.close()
+
+        with open(db_cennik_url, "r") as input:
+            with open("temp2.txt", "w") as output:
+                for line in input:
+                    if line.strip("\n") != str(pocet_produktov) :
+                        output.write(line)
+                    if line.strip("\n") == str(pocet_produktov) :
+                        output.write(str(pocet_produktov1)+'\n')
+
+        os.replace('temp2.txt', db_cennik_url)
 
 def fillEntries(event):
     kod_entry.delete(0,'end')
@@ -186,9 +255,8 @@ def edit():
     kod = kod_entry.get()
     nazov = nazov_entry.get()
     obrazok = obrazok_entry.get()
-
+    #kontrola duplicitneho tovaru
     kontrolny_riadok=kod +';'+ nazov +';'+ obrazok
-    #print(kontrolny_riadok)
 
     subor = open(db_tovar_url,'r+')
     for line in subor:
@@ -196,24 +264,23 @@ def edit():
             showinfo(title='INFO', message='Tovar uz existuje')
             return 
     subor.close()
-
+    #kontrola duplicitneho kodu
     kontrolny_riadok2=kod
     print(kontrolny_riadok2)
 
     subor = open(db_tovar_url,'r+')
     for line in subor:
-        print(line)
         if kontrolny_riadok2 in line:
             showinfo(title='INFO', message='kod uz existuje')
             return 
     subor.close()
-
+    #osetrenie vstupnych poli
     pattern = re.compile("^[a-zA-Z ]+$")
     pattern2 = re.compile("^[a-zA-Z._]+$")
     pattern3 = re.compile("^[0-9]+$")
 
     if pattern.match(nazov) and pattern2.match(obrazok) and pattern3.match(kod):
-
+        #upravovanie v TOVAR.txt
         for selected_item1 in tree.selection():
             item = tree.item(selected_item1)
             oznaceny = item['values']
@@ -231,17 +298,58 @@ def edit():
         with open(db_tovar_url, "r") as input:
             with open("temp1.txt", "w") as output:
                 for line in input:
-                    if line.strip("\n") != riadok:
+                    if riadok not in line:
                         output.write(line)
-                    if line.strip("\n") == riadok:
-                        output.write(new_line+'\n')
+                    if riadok in line:
+                        output.write(new_line)
                     
         os.replace('temp1.txt', db_tovar_url)
 
         selected_item = tree.selection()[0]
         tree.item(selected_item,values=([kod, nazov, obrazok]))
 
+        #upravovanie v SKLAD.txt
+        poz=riadok.find(';')
+        kodik=riadok[:poz]
+        print(kodik)
+        
+        subor = open(db_sklad_url,'r+')
+        for line in subor:
+            if kodik in line:
+                new_line = line.replace(kodik, kod)
+                print(new_line)
+        subor.close()
 
+        with open(db_sklad_url, "r") as input:
+            with open("temp1.txt", "w") as output:
+                for line in input:
+                    if kodik not in line:
+                        output.write(line)
+                    if kodik in line:
+                        output.write(new_line)
+
+        os.replace('temp1.txt', db_sklad_url)
+        #upravovanie v CENNIK.txt
+        poz=riadok.find(';')
+        kodik=riadok[:poz]
+        print(kodik)
+        
+        subor = open(db_cennik_url,'r+')
+        for line in subor:
+            if kodik in line:
+                new_line = line.replace(kodik, kod)
+                print(new_line)
+        subor.close()
+
+        with open(db_cennik_url, "r") as input:
+            with open("temp1.txt", "w") as output:
+                for line in input:
+                    if kodik not in line:
+                        output.write(line)
+                    if kodik in line:
+                        output.write(new_line)
+
+        os.replace('temp1.txt', db_cennik_url)
 
     else:
         showinfo(title='INFO', message='zle zadane hodnoty')
