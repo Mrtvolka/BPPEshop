@@ -9,6 +9,8 @@ import PIL
 from PIL import ImageTk,Image
 import customtkinter
 from custom_hovertip import CustomTooltipLabel
+from filelock import FileLock
+import time
 
 customtkinter.set_appearance_mode("Dark")
 customtkinter.set_default_color_theme("green")
@@ -16,6 +18,7 @@ customtkinter.set_default_color_theme("green")
 root = customtkinter.CTk()
 root.title('INTERNA DATABAZA')
 root.geometry('1280x720')
+#root.wm_attributes("-transparentcolor","white")
 
 rootPath = 'C:/Users/tomin/Documents/GitHub/BPPEshop/'
 #rootPath = 'C:/Users/Ivan/Documents/Sites/BPPEshop/'
@@ -24,15 +27,23 @@ db_tovar_url = rootPath + 'databaza/TOVAR.txt'
 db_sklad_url = rootPath + 'databaza/SKLAD.txt'
 db_cennik_url = rootPath + 'databaza/CENNIK.txt'
 
+db_tovar_verzia_url = rootPath + 'databaza/TOVAR_VERZIA.txt'
+db_sklad_verzia_url = rootPath + 'databaza/SKLAD_VERZIA.txt'
+db_cennik_verzia_url = rootPath + 'databaza/CENNIK_VERZIA.txt'
+
+subor_lock = FileLock('databaza/TOVAR_LOCK.txt')
+subor_lock1 = FileLock('databaza/SKLAD_LOCK.txt')
+subor_lock2 = FileLock('databaza/CENNIK_LOCK.txt')
+
 columns = ('KOD_tovaru', 'NAZOV_tovaru', 'OBRAZOK_tovaru')
-tree = ttk.Treeview(root, columns=columns, show='headings',)
+tree = ttk.Treeview(root, columns=columns, show='headings')
 
 def viewProducts():
 
     # define headings
-    tree.heading('KOD_tovaru', text='kod tovaru')
-    tree.heading('NAZOV_tovaru', text='nazov tovaru')
-    tree.heading('OBRAZOK_tovaru', text='nazov obrazku')
+    tree.heading('KOD_tovaru', text='KOD TOVARU')
+    tree.heading('NAZOV_tovaru', text='NAZOV TOVARU')
+    tree.heading('OBRAZOK_tovaru', text='NAZOV OBRAZKU')
 
     subor = open(db_tovar_url,'r+')
     pocet_produktov = (subor.readline()).strip()
@@ -45,30 +56,49 @@ def viewProducts():
         riadok=(subor.readline()).strip()
     subor.close()
    
-def add():
+def add(): 
     kod = kod_entry.get()
     nazov = nazov_entry.get()
     obrazok = obrazok_entry.get()
+
     #kontola duplicitneho tovaru
     kontrolny_riadok=kod +';'+ nazov +';'+ obrazok
     print(kontrolny_riadok)
 
+    subor_lock.acquire()
+    subor_lock1.acquire()
+    subor_lock2.acquire()
+    
     subor = open(db_tovar_url,'r+')
+    #portalocker.lock(subor, portalocker.LockFlags.EXCLUSIVE)
     for line in subor:
         if kontrolny_riadok in line:
+            subor_lock.release()
+            subor_lock1.release()
+            subor_lock2.release()
             showinfo(title='INFO', message='Tovar uz existuje')
             return
     subor.close()
+    
     #kontola duplicitneho kodu
-    kontrolny_riadok2=kod
-    print(kontrolny_riadok2)
+    kontrolny_riadok3=kod
+    print(kontrolny_riadok3)
 
     subor = open(db_tovar_url,'r+')
     for line in subor:
-        print(line)
-        if kontrolny_riadok2 in line:
-            showinfo(title='INFO', message='kod uz existuje')
+        #print(line)
+        if kod=='' or nazov=='' or obrazok=='':
+            subor_lock.release()
+            subor_lock1.release()
+            subor_lock2.release()
+            showinfo(title='INFO', message='zle zadane hodnoty')
             return 
+        if kontrolny_riadok3 in line:
+            subor_lock.release()
+            subor_lock1.release()
+            subor_lock2.release()
+            showinfo(title='INFO', message='kod uz existuje')
+            return
     subor.close()
 
     pattern = re.compile("^[a-zA-Z ]+$")
@@ -94,9 +124,37 @@ def add():
         nazov_entry.delete(0,'end')
         obrazok_entry.delete(0,'end')
 
+        #TOVAR.txt verzia +1
+        subor = open(db_tovar_verzia_url,'r+')
+        pocet_produktov = int((subor.readline()).strip()) + 1
+        print(pocet_produktov)
+        # FIRST ROW
+        subor.seek(0, os.SEEK_SET)
+        subor.write(str(pocet_produktov))
+
+        #SKLAD.txt verzia +1
+        subor = open(db_sklad_verzia_url,'r+')
+        pocet_produktov = int((subor.readline()).strip()) + 1
+        print(pocet_produktov)
+        # FIRST ROW
+        subor.seek(0, os.SEEK_SET)
+        subor.write(str(pocet_produktov))
+
+        #CENNIK.txt verzia +1
+        subor = open(db_cennik_verzia_url,'r+')
+        pocet_produktov = int((subor.readline()).strip()) + 1
+        print(pocet_produktov)
+        # FIRST ROW
+        subor.seek(0, os.SEEK_SET)
+        subor.write(str(pocet_produktov))
+
     else:
         showinfo(title='INFO', message='zle zadane hodnoty')
- 
+    
+    subor_lock.release()
+    subor_lock1.release()
+    subor_lock2.release()
+
 def delete():
     #potvrdzovacia tabulka
     answer = askyesno(title='POTVRDENIE',
@@ -109,7 +167,11 @@ def delete():
             print(oznaceny)
             zmaz=';'.join(map(str,oznaceny))
             print(zmaz)
-            
+
+        subor_lock.acquire()
+        subor_lock1.acquire()
+        subor_lock2.acquire()
+
         with open(db_tovar_url, "r") as input:
             with open("temp.txt", "w") as output:
                 for line in input:
@@ -117,6 +179,15 @@ def delete():
                         output.write(line)
 
         os.replace('temp.txt', db_tovar_url)
+        
+        with open(db_tovar_url, 'r') as f:
+            lines = f.readlines()
+
+        last_line = lines[-1].rstrip()
+        lines[-1] = last_line
+
+        with open(db_tovar_url, 'w') as f:
+            f.writelines(lines)
 
         selected_item = tree.selection()[0]
         tree.delete(selected_item)
@@ -154,6 +225,15 @@ def delete():
 
         os.replace('temp.txt', db_sklad_url)
 
+        with open(db_sklad_url, 'r') as f:
+            lines = f.readlines()
+
+        last_line = lines[-1].rstrip()
+        lines[-1] = last_line
+
+        with open(db_sklad_url, 'w') as f:
+            f.writelines(lines)
+
         subor = open(db_sklad_url,'r+')
         pocet_produktov = int((subor.readline()).strip())
         print(pocet_produktov)
@@ -187,6 +267,15 @@ def delete():
 
         os.replace('temp.txt', db_cennik_url)
 
+        with open(db_cennik_url, 'r') as f:
+            lines = f.readlines()
+
+        last_line = lines[-1].rstrip()
+        lines[-1] = last_line
+
+        with open(db_cennik_url, 'w') as f:
+            f.writelines(lines)
+
         subor = open(db_cennik_url,'r+')
         pocet_produktov = int((subor.readline()).strip())
         print(pocet_produktov)
@@ -206,6 +295,34 @@ def delete():
                         output.write(str(pocet_produktov1)+'\n')
 
         os.replace('temp2.txt', db_cennik_url)
+
+        #TOVAR.txt verzia +1
+        subor = open(db_tovar_verzia_url,'r+')
+        pocet_produktov = int((subor.readline()).strip()) + 1
+        print(pocet_produktov)
+        # FIRST ROW
+        subor.seek(0, os.SEEK_SET)
+        subor.write(str(pocet_produktov))
+                
+        #SKLAD.txt verzia +1
+        subor = open(db_sklad_verzia_url,'r+')
+        pocet_produktov = int((subor.readline()).strip()) + 1
+        print(pocet_produktov)
+        # FIRST ROW
+        subor.seek(0, os.SEEK_SET)
+        subor.write(str(pocet_produktov))
+
+        #CENNIK.txt verzia +1
+        subor = open(db_cennik_verzia_url,'r+')
+        pocet_produktov = int((subor.readline()).strip()) + 1
+        print(pocet_produktov)
+        # FIRST ROW
+        subor.seek(0, os.SEEK_SET)
+        subor.write(str(pocet_produktov))
+
+        subor_lock.release()
+        subor_lock1.release()
+        subor_lock2.release()
 
 def fillEntries(event):
     kod_entry.delete(0,'end')
@@ -258,9 +375,16 @@ def edit():
     #kontrola duplicitneho tovaru
     kontrolny_riadok=kod +';'+ nazov +';'+ obrazok
 
+    subor_lock.acquire()
+    subor_lock1.acquire()
+    subor_lock2.acquire()
+
     subor = open(db_tovar_url,'r+')
     for line in subor:
         if kontrolny_riadok in line:
+            subor_lock.release()
+            subor_lock1.release()
+            subor_lock2.release()
             showinfo(title='INFO', message='Tovar uz existuje')
             return 
     subor.close()
@@ -270,9 +394,18 @@ def edit():
 
     subor = open(db_tovar_url,'r+')
     for line in subor:
-        if kontrolny_riadok2 in line:
-            showinfo(title='INFO', message='kod uz existuje')
+        if kod=='' or nazov=='' or obrazok=='':
+            subor_lock.release()
+            subor_lock1.release()
+            subor_lock2.release()
+            showinfo(title='INFO', message='zle zadane hodnoty')
             return 
+        #if kontrolny_riadok2 in line:
+            #subor_lock.release()
+            #subor_lock1.release()
+            #ubor_lock2.release()
+            #showinfo(title='INFO', message='kod uz existuje')
+            #return 
     subor.close()
     #osetrenie vstupnych poli
     pattern = re.compile("^[a-zA-Z ]+$")
@@ -291,7 +424,7 @@ def edit():
         subor = open(db_tovar_url,'r+')
         for line in subor:
             if riadok in line:
-                new_line = line.replace(line, kod+';'+nazov+';'+obrazok)
+                new_line = line.replace(riadok, kod+';'+nazov+';'+obrazok)
                 print(new_line)
         subor.close()
 
@@ -353,32 +486,66 @@ def edit():
 
     else:
         showinfo(title='INFO', message='zle zadane hodnoty')
+    
+    #TOVAR.txt verzia +1
+    subor = open(db_tovar_verzia_url,'r+')
+    pocet_produktov = int((subor.readline()).strip()) + 1
+    print(pocet_produktov)
+    # FIRST ROW
+    subor.seek(0, os.SEEK_SET)
+    subor.write(str(pocet_produktov))
+
+    #SKLAD.txt verzia +1
+    subor = open(db_sklad_verzia_url,'r+')
+    pocet_produktov = int((subor.readline()).strip()) + 1
+    print(pocet_produktov)
+    # FIRST ROW
+    subor.seek(0, os.SEEK_SET)
+    subor.write(str(pocet_produktov))
+
+    #CENNIK.txt verzia +1
+    subor = open(db_cennik_verzia_url,'r+')
+    pocet_produktov = int((subor.readline()).strip()) + 1
+    print(pocet_produktov)
+    # FIRST ROW
+    subor.seek(0, os.SEEK_SET)
+    subor.write(str(pocet_produktov))
+    
+    subor_lock.release()
+    subor_lock1.release()
+    subor_lock2.release()
 
 def search(e):
     search = search_entry.get()
-    print(search)
-                
-    idx = []
-    for id in tree.get_children():
-        item = tree.item(id)['values']
-        nazov = item[1]
-        if search in nazov:
-            idx.append(id)
-
-    tree.selection_set(idx)
-
+    if search !='':
+        print(search)
+                    
+        idx = []
+        for id in tree.get_children():
+            item = tree.item(id)['values']
+            nazov = item[1]
+            if search in nazov:
+                idx.append(id)
+            
+        tree.selection_set(idx)
+        if tree.selection().__len__()==0:
+            showinfo(title='INFO', message='tovar neexistuje')
+            
 def search2():
     search = search_entry.get()
-    print(search)
-                
-    idx = []
-    for id in tree.get_children():
-        item = tree.item(id)['values']
-        nazov = item[1]
-        if search in nazov:
-            idx.append(id)
+    if search !='':
+        print(search)
+                    
+        idx = []
+        for id in tree.get_children():
+            item = tree.item(id)['values']
+            nazov = item[1]
+            if search in nazov:
+                idx.append(id)
 
-    tree.selection_set(idx)
+        tree.selection_set(idx)
+        if tree.selection().__len__()==0:
+            showinfo(title='INFO', message='tovar neexistuje')
 
 tree.bind('<<TreeviewSelect>>',fillEntries)
 viewProducts()
@@ -409,7 +576,7 @@ kod_entry.grid(row=2,padx=90,pady=10)
 nazov_entry = customtkinter.CTkEntry(master=frame,placeholder_text= "nazov")
 nazov_entry.grid()
 
-obrazok_entry = customtkinter.CTkEntry(master=frame,placeholder_text= "obrazok")
+obrazok_entry = customtkinter.CTkEntry(master=frame,placeholder_text= "nazov obrazku")
 obrazok_entry.grid(pady=10)
 
 add_button = customtkinter.CTkButton(master=frame,text="PRIDAT TOVAR",command=add) 
